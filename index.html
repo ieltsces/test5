@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Phòng lồng tiếng – Cute!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF5E6; --paper:#FFFFFF; --ink:#23311C; --muted:#5B6B52; --line:#D5E3C8;
+  --grass:#4F8F2F; --grass-soft:#DDEFCF; --barn:#D93A2B; --barn-soft:#FBE3DD;
+  --yolk:#F4C02F; --yolk-soft:#FFF3C9; --sky:#2F7FB8;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#162012; --paper:#1F2B1A; --ink:#EAF3E1; --muted:#A8B99C; --line:#34452C;
+  --grass:#7CC150; --grass-soft:#2A3D20; --barn:#F0694F; --barn-soft:#43231C;
+  --yolk:#F6CB4A; --yolk-soft:#3D3416; --sky:#6FB3E6; color-scheme:dark;}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.5 Nunito,"Segoe UI",Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px}
+h1{font:800 clamp(28px,4.5vw,42px)/1.05 "Baloo 2",Nunito,sans-serif;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 span{color:var(--barn)}
+.sub{color:var(--muted);margin:4px 0 0;font-size:15px}
+.name{display:flex;align-items:center;gap:8px;font-weight:700}
+.name input{font:inherit;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);width:180px}
+.name input:focus{outline:none;border-color:var(--grass)}
+.notice{background:var(--barn-soft);border:2px solid var(--barn);border-radius:14px;padding:12px 16px;margin-bottom:16px;font-weight:700}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.stagebox{position:sticky;top:12px;display:flex;flex-direction:column;gap:12px}
+@media (max-width:860px){.stagebox{position:static}}
+
+/* ---------- Khung video ---------- */
+.stage{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:16/9;max-width:100%;box-shadow:0 6px 0 var(--line);container-type:inline-size}
+.stage:fullscreen{border-radius:0;aspect-ratio:auto;width:100vw;height:100vh;box-shadow:none}
+.stage>video{width:100%;height:100%;display:block;object-fit:contain}
+.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.count{font:800 min(22vw,150px)/1 "Baloo 2",sans-serif;color:#fff;text-shadow:0 4px 0 var(--barn),0 0 30px rgba(0,0,0,.5);animation:pop .7s ease-out}
+@keyframes pop{from{transform:scale(1.6);opacity:0}to{transform:scale(1);opacity:1}}
+.badge{position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;font-weight:800;font-size:14px;color:#fff;background:rgba(0,0,0,.55)}
+.badge.rec{background:var(--barn)}
+.badge.rec::before{content:"";width:10px;height:10px;border-radius:50%;background:#fff;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.2}}
+.cctext{position:absolute;top:52px;left:50%;transform:translateX(-50%);max-width:70%;text-align:center;background:rgba(0,0,0,.6);color:#FFE27A;font:800 clamp(13px,2.6cqw,22px)/1.3 Nunito,sans-serif;padding:6px 14px;border-radius:10px;pointer-events:none}
+
+/* Nút lớn giữa video */
+.startdub{position:absolute;left:50%;top:50%;transform:translate(-50%,-60%);display:flex;align-items:center;gap:14px;background:var(--barn);color:#fff;border-radius:18px;padding:16px 26px 16px 20px;font:800 clamp(15px,3cqw,24px)/1.15 "Baloo 2",Nunito,sans-serif;text-align:left;box-shadow:0 6px 22px rgba(0,0,0,.35)}
+.startdub:active{transform:translate(-50%,-58%)}
+.startdub svg{width:1.5em;height:1.5em;flex:none}
+
+/* Camera tròn ở góc */
+.cam{position:absolute;right:3%;bottom:64px;width:clamp(72px,22cqw,190px);aspect-ratio:1;border-radius:50%;overflow:hidden;border:4px solid rgba(255,255,255,.95);background:#2a2a2a;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+.cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}
+.camoff{position:absolute;inset:0;display:grid;place-items:center;color:#ddd;font-size:clamp(20px,5cqw,40px)}
+.camtoggle{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);padding:4px 10px;border-radius:99px;font-size:clamp(11px,1.8cqw,14px);background:rgba(0,0,0,.55);color:#fff;box-shadow:none}
+.camtoggle:active{transform:translateX(-50%) translateY(1px);box-shadow:none}
+.camtoggle.off{background:var(--barn)}
+
+/* Thanh điều khiển */
+.vbar{transition:opacity .25s;position:absolute;left:10px;right:10px;bottom:10px;background:rgba(20,20,20,.72);backdrop-filter:blur(6px);border-radius:14px;padding:8px 12px 6px;color:#fff}
+.seek{position:relative;height:18px;cursor:pointer;display:flex;align-items:center}
+.seek::before{content:"";position:absolute;left:0;right:0;height:5px;border-radius:9px;background:rgba(255,255,255,.3)}
+.seek i{position:absolute;left:0;height:5px;border-radius:9px;background:#fff;width:0}
+.seek b{position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;left:0;transform:translateX(-50%)}
+.seek.locked{cursor:default}
+.vrow{display:flex;align-items:center;gap:6px}
+.vrow button{background:transparent;color:#fff;box-shadow:none;padding:6px 8px;border-radius:10px}
+.vrow button:hover{background:rgba(255,255,255,.12)}
+.vrow button:active{transform:none;box-shadow:none}
+.vrow svg{width:22px;height:22px;display:block;fill:#fff}
+.time{font:700 14px/1 ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:4px}
+.grow{flex:1}
+.ccbtn{font:800 13px/1 Nunito,sans-serif!important;border:2px solid #fff!important;padding:5px 7px!important}
+.ccbtn.on{background:#1E9BE9!important;border-color:#1E9BE9!important}
+@container (max-width:430px){.time{font-size:12px}.vrow svg{width:19px;height:19px}.cam{bottom:56px}}
+
+/* Khi đang chạy: ẩn thanh điều khiển để không che phụ đề (rê chuột vào video để hiện lại) */
+.stage.run .vbar{opacity:0;pointer-events:none}
+.stage.run.watch:hover .vbar,.stage.run.watch:focus-within .vbar{opacity:1;pointer-events:auto}
+.cam{transition:bottom .25s}
+.stage.run .cam{bottom:4%}
+.controls{display:flex;flex-wrap:wrap;gap:8px}
+button{font:800 15px/1 Nunito,sans-serif;border:0;border-radius:14px;padding:12px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;color:var(--ink);background:var(--paper);box-shadow:0 3px 0 var(--line);transition:transform .08s}
+button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+button:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.b-stop{background:var(--ink);color:var(--paper);box-shadow:none}
+.tip{background:var(--yolk-soft);border-radius:14px;padding:10px 14px;font-size:14px;color:var(--ink)}
+.msg{min-height:1.5em;font-weight:700;color:var(--barn)}
+
+.list{display:flex;flex-direction:column;gap:10px}
+.list h2{font:800 22px/1.2 "Baloo 2",sans-serif;margin:0 0 2px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.list h2 small{font:700 14px Nunito,sans-serif;color:var(--muted)}
+.cue{background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:12px 14px;display:grid;grid-template-columns:36px 1fr;gap:4px 12px;align-items:center}
+.cue.active{border-color:var(--yolk);background:var(--yolk-soft)}
+.cue.done .num{background:var(--grass);color:#fff}
+.num{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--grass-soft);color:var(--grass);font:800 17px "Baloo 2",sans-serif;grid-row:span 2}
+.en{font:800 20px/1.2 "Baloo 2",sans-serif}
+.vi{color:var(--muted);font-size:14px}
+.acts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.acts button{padding:9px 12px;font-size:14px;border-radius:12px}
+.b-rec{background:var(--barn);color:#fff;box-shadow:0 3px 0 color-mix(in srgb,var(--barn) 60%,#000)}
+.b-mine{background:var(--grass-soft)}
+.b-big{background:var(--grass);color:#fff;font-size:18px;padding:16px 22px;box-shadow:0 4px 0 color-mix(in srgb,var(--grass) 55%,#000);align-self:flex-start}
+.result{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.result h2{font:800 20px/1.2 "Baloo 2",sans-serif;margin:0}
+.result video{width:100%;border-radius:12px;background:#000}
+.b-reccam{padding:12px 18px}
+.dl{display:inline-flex;align-items:center;gap:8px;background:var(--barn);color:#fff;text-decoration:none;font-weight:800;padding:14px 20px;border-radius:14px}
+@media (prefers-reduced-motion:reduce){.count,.badge.rec::before{animation:none}}
+canvas{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Phòng lồng tiếng <span>Cute!</span></h1>
+      <p class="sub">Little Fox · Level 1 · 9 câu · Luyện từng câu, rồi bấm Ghi hình để lồng tiếng cả bài có camera.</p>
+    </div>
+    <label class="name" for="stuName">Tên em:
+      <input id="stuName" placeholder="VD: Minh Anh" maxlength="30"></label>
+  </header>
+
+  <div class="notice" id="notice" hidden></div>
+  <div class="grid">
+    <div class="stagebox">
+      <div class="stage" id="stage">
+        <video id="vid" playsinline preload="auto"></video>
+        <div class="cctext" id="ccText" hidden></div>
+        <div class="ov" id="ov"></div>
+        <div class="badge" id="badge" hidden></div>
+
+        <button class="startdub" id="bDub">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          <span>Bắt đầu<br>Lồng tiếng</span>
+        </button>
+
+        <div class="cam" id="cam">
+          <video id="camVid" muted playsinline autoplay></video>
+          <div class="camoff" id="camOff" aria-hidden="true">📷</div>
+          <button class="camtoggle off" id="bCam" aria-label="Bật hoặc tắt camera">Bật</button>
+        </div>
+
+        <div class="vbar">
+          <div class="seek" id="seek" role="slider" aria-label="Thanh thời gian" tabindex="0"><i id="prog"></i><b id="knob"></b></div>
+          <div class="vrow">
+            <button id="bPlay" aria-label="Phát"><svg viewBox="0 0 24 24" id="icoPlay"><path d="M7 4.5v15l13-7.5z"/></svg></button>
+            <button id="bMute" aria-label="Tắt tiếng"><svg viewBox="0 0 24 24" id="icoVol"><path d="M4 9v6h4l5 4V5L8 9z M15.5 8.5a5 5 0 0 1 0 7l-1.2-1.2a3.3 3.3 0 0 0 0-4.6z M18 6a8.5 8.5 0 0 1 0 12l-1.2-1.2a6.8 6.8 0 0 0 0-9.6z"/></svg></button>
+            <span class="time" id="time">0:00 / 0:00</span>
+            <span class="grow"></span>
+            <button class="ccbtn on" id="bCC" aria-label="Phụ đề tiếng Việt" aria-pressed="true">CC</button>
+            <button id="bFull" aria-label="Toàn màn hình"><svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4zm10 0h6v6h-2V6h-4zM4 14h2v4h4v2H4zm14 0h2v6h-6v-2h4z"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="bModel">🔊 Nghe cả bài mẫu</button>
+        <button id="bRecCam" class="b-rec b-reccam">🎥 Ghi hình</button>
+        <button id="bStop" class="b-stop" hidden>■ Dừng</button>
+      </div>
+      <div class="tip">🎧 Đeo tai nghe khi thu âm để nhạc nền không lọt vào micro. Chữ chuyển <b style="color:#b8860b">vàng</b> là lúc em nói. Bấm <b>🎥 Ghi hình</b> để quay lại phần lồng tiếng có hình em.</div>
+      <div class="msg" id="msg" role="status"></div>
+      <div class="result" id="result" hidden>
+        <h2>🎬 Video của em</h2>
+        <video id="outVid" controls playsinline></video>
+        <a class="dl" id="dl" href="#">⬇ Tải video về</a>
+      </div>
+    </div>
+
+    <section class="list" aria-label="Các câu thoại">
+      <h2>Luyện từng câu <small id="count">Đã thu 0/9</small></h2>
+      <div id="cues"></div>
+    </section>
+  </div>
+
+</div>
+<canvas id="cv" width="1280" height="720"></canvas>
+<audio id="orig" preload="auto"></audio>
+<!--@@DATA@@-->
+<script>
+const CUES=[
+ {en:"Cute!",vi:"Dễ thương quá!",s:0.35,e:1.5},
+ {en:"The kitten is cute.",vi:"Mèo con dễ thương.",s:13.3,e:16.3},
+ {en:"The puppy is cute.",vi:"Cún con dễ thương.",s:30.8,e:33.2},
+ {en:"The duckling is cute.",vi:"Vịt con dễ thương.",s:46.8,e:49.1},
+ {en:"The chick is cute.",vi:"Gà con dễ thương.",s:62.7,e:65.1},
+ {en:"The piglet is cute.",vi:"Lợn con dễ thương.",s:74.3,e:76.9},
+ {en:"The lamb is cute.",vi:"Cừu con dễ thương.",s:90.3,e:92.9},
+ {en:"The calf is cute.",vi:"Bê con dễ thương.",s:97.8,e:100.3},
+ {en:"I love them all!",vi:"Tớ yêu tất cả các bạn ấy!",s:110.3,e:112.7}
+];
+const ORIG_OFFSET=0.12; // âm thanh gốc lệch so với video không lời (giây)
+const $=id=>document.getElementById(id);
+const video=$("vid"), orig=$("orig"), camVid=$("camVid");
+
+//@@MEDIA_START
+// Đổi tên file ở đây khi làm bài mới. Trang tìm file cạnh index.html trước, rồi mới tìm trong thư mục media/
+const SINGLE=false;
+const VIDEO_SRCS=["cute.mp4","media/cute.mp4"];                             // video đã xoá giọng
+const MODEL_SRCS=["cute-mau.mp3","media/cute-mau.mp3","media/cute-mau.m4a"]; // âm thanh gốc (để "Nghe mẫu")
+const POSTER_SRCS=["cute-poster.jpg","media/cute-poster.jpg"];              // ảnh bìa
+function initMedia(){
+  video.src=VIDEO_SRCS[0]; orig.src=MODEL_SRCS[0];
+  const im=new Image(); let k=0;
+  im.onload=()=>video.poster=POSTER_SRCS[k];
+  im.onerror=()=>{ if(++k<POSTER_SRCS.length) im.src=POSTER_SRCS[k]; };
+  im.src=POSTER_SRCS[0];
+}
+//@@MEDIA_END
+
+let videoIdx=0, modelIdx=0;
+const IS_FILE=location.protocol==="file:"&&!SINGLE;
+let ctx,bgmGain,voiceBus,mixDest,micStream,micNode,camStream=null,camOn=false;
+let abortFlag=false,busy=false,mode="",playingSrcs=[],primed=false,ccOn=true;
+const takes=new Array(CUES.length).fill(null);
+
+/* ---------- Thông báo ---------- */
+function msg(t){$("msg").textContent=t||"";}
+function showNotice(t){const n=$("notice");n.hidden=false;n.textContent="⚠️ "+t;}
+function mediaErr(name){return IS_FILE
+  ? "Không mở được "+name+" khi mở file trực tiếp. Hãy dùng link GitHub Pages (https://...github.io/...)."
+  : "Không tải được "+name+". Kiểm tra đã tải file này lên GitHub (cùng chỗ với index.html) chưa, và tên file có đúng từng chữ không (phân biệt chữ hoa/thường).";}
+video.addEventListener("error",()=>{
+  if(++videoIdx<VIDEO_SRCS.length){ video.src=VIDEO_SRCS[videoIdx]; video.load(); return; }
+  showNotice(mediaErr(VIDEO_SRCS[0]));
+});
+orig.addEventListener("error",()=>{
+  if(++modelIdx<MODEL_SRCS.length){ orig.src=MODEL_SRCS[modelIdx]; orig.load(); return; }
+  showNotice(mediaErr(MODEL_SRCS[0])+" (Chỉ nút \"Nghe mẫu\" bị ảnh hưởng.)");
+});
+if(IS_FILE) showNotice("Bạn đang mở file trực tiếp trên máy nên có thể không phát được video và không ghi hình được. Hãy mở qua link GitHub Pages (https://...github.io/...), hoặc dùng file Phong_long_tieng_Cute.html.");
+initMedia();
+
+/* ---------- Danh sách câu ---------- */
+function renderCues(){
+  $("cues").innerHTML=CUES.map((c,i)=>`
+   <div class="cue ${takes[i]?'done':''}" id="cue${i}">
+     <div class="num">${takes[i]?'✓':i+1}</div>
+     <div class="en">${c.en}</div>
+     <div class="vi">${c.vi}</div>
+     <div class="acts">
+       <button data-a="model" data-i="${i}">🔊 Nghe mẫu</button>
+       <button class="b-rec" data-a="rec" data-i="${i}">🎤 ${takes[i]?'Thu lại':'Thu âm'}</button>
+       <button class="b-mine" data-a="mine" data-i="${i}" ${takes[i]?'':'disabled'}>▶ Nghe giọng em</button>
+     </div>
+   </div>`).join("");
+  $("count").textContent=`Đã thu ${takes.filter(Boolean).length}/${CUES.length}`;
+}
+renderCues();
+$("cues").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-a]"); if(!b||busy) return;
+  const i=+b.dataset.i;
+  ({model:playModel,rec:recordCue,mine:playMine})[b.dataset.a](i);
+});
+
+/* ---------- Trạng thái ---------- */
+const ICON_PLAY='<path d="M7 4.5v15l13-7.5z"/>', ICON_STOP='<rect x="6" y="6" width="12" height="12" rx="2"/>', ICON_PAUSE='<path d="M6 5h4v14H6zm8 0h4v14h-4z"/>';
+function badge(t,rec){const b=$("badge"); if(!t){b.hidden=true;return;} b.hidden=false;b.textContent=t;b.classList.toggle("rec",!!rec);}
+function setActive(i){document.querySelectorAll(".cue").forEach((el,k)=>el.classList.toggle("active",k===i));}
+function setBusy(v,m){
+  busy=v; mode=v?(m||""):"";
+  $("bStop").hidden=!v; $("bDub").hidden=v;
+  $("seek").classList.toggle("locked",v);
+  $("stage").classList.toggle("run",v); $("stage").classList.toggle("watch",v&&mode==="watch");
+  $("icoPlay").innerHTML=v?(mode==="watch"?ICON_PAUSE:ICON_STOP):ICON_PLAY;
+  $("bPlay").setAttribute("aria-label",v?"Dừng":"Phát");
+  document.querySelectorAll("button:not(#bStop):not(#bPlay):not(#bCam):not(#bMute):not(#bCC):not(#bFull)").forEach(b=>{if(v)b.disabled=true;});
+  if(!v){ renderCues(); ["bModel","bRecCam","bDub"].forEach(id=>$(id).disabled=false); }
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function fmt(t){t=Math.max(0,Math.floor(t||0));return Math.floor(t/60)+":"+String(t%60).padStart(2,"0");}
+function tick(){
+  const d=video.duration||0, t=video.currentTime, p=d?t/d*100:0;
+  $("prog").style.width=p+"%"; $("knob").style.left=p+"%";
+  $("time").textContent=fmt(t)+" / "+fmt(d);
+  const c=ccOn&&CUES.find(c=>t>=c.s-0.3&&t<=c.e+0.8);
+  const cc=$("ccText"); if(c){cc.hidden=false;cc.textContent=c.vi;} else cc.hidden=true;
+}
+video.addEventListener("timeupdate",tick); video.addEventListener("loadedmetadata",tick); video.addEventListener("seeked",tick);
+
+/* ---------- Âm thanh ---------- */
+function setBgm(v){ if(bgmGain) bgmGain.gain.value=v; else video.volume=Math.min(1,v); }
+function prime(){ // mở khoá âm thanh ngay trong cú bấm (bắt buộc trên iPad/iPhone)
+  if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)();
+  if(ctx.state!=="running") ctx.resume();
+  if(primed) return; primed=true;
+  [video,orig].forEach(m=>{ try{ const p=m.play(); m.pause(); if(p) p.catch(()=>{}); }catch(e){} });
+}
+async function initAudio(){
+  if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)();
+  if(!voiceBus){
+    voiceBus=ctx.createGain(); voiceBus.gain.value=1.5; voiceBus.connect(ctx.destination);
+    mixDest=ctx.createMediaStreamDestination(); voiceBus.connect(mixDest);
+  }
+  if(!IS_FILE&&!bgmGain){
+    const src=ctx.createMediaElementSource(video);
+    bgmGain=ctx.createGain(); src.connect(bgmGain); bgmGain.connect(ctx.destination); bgmGain.connect(mixDest);
+  }
+  if(ctx.state!=="running") await ctx.resume();
+}
+async function ensureMic(){
+  if(micStream) return true;
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    return true;
+  }catch(err){
+    msg("Không mở được micro. Hãy cho phép trình duyệt dùng micro (biểu tượng ổ khoá trên thanh địa chỉ) rồi thử lại.");
+    return false;
+  }
+}
+
+/* ---------- Camera ---------- */
+async function camStart(){
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}},audio:false});
+    camVid.srcObject=camStream; await camVid.play().catch(()=>{});
+    camOn=true;
+  }catch(e){ camOn=false; msg("Không mở được camera. Hãy cho phép trình duyệt dùng camera (biểu tượng ổ khoá trên thanh địa chỉ)."); }
+  camUI();
+}
+function camStop(){
+  if(camStream) camStream.getTracks().forEach(t=>t.stop());
+  camStream=null; camVid.srcObject=null; camOn=false; camUI();
+}
+function camUI(){
+  $("camOff").hidden=camOn; $("bCam").textContent=camOn?"Tắt":"Bật"; $("bCam").classList.toggle("off",!camOn);
+}
+$("bCam").onclick=()=>camOn?camStop():camStart();
+
+/* ---------- Điều khiển video ---------- */
+function seek(t){return new Promise(r=>{if(Math.abs(video.currentTime-t)<0.01)return r();video.addEventListener("seeked",()=>r(),{once:true});video.currentTime=t;});}
+function waitPlaying(){return new Promise(r=>video.addEventListener("playing",()=>r(),{once:true}));}
+async function startVideo(){
+  if(video.error||(video.readyState===0&&video.networkState===3)) throw new Error(mediaErr(VIDEO_SRCS[0]));
+  const pl=waitPlaying();
+  try{ await video.play(); }catch(e){ throw new Error("Trình duyệt chặn phát video. Hãy bấm lại nút một lần nữa."); }
+  await pl;
+}
+function until(to,onFrame){return new Promise(r=>{
+  (function loop(){
+    if(abortFlag||video.ended||video.paused||video.currentTime>=to){return r();}
+    onFrame&&onFrame(); tick(); requestAnimationFrame(loop);
+  })();
+});}
+async function countdown(){
+  const ov=$("ov");
+  for(const n of ["3","2","1"]){ if(abortFlag)break; ov.innerHTML=`<div class="count">${n}</div>`; await sleep(700); }
+  ov.innerHTML="";
+}
+function stopAll(){
+  video.pause(); orig.pause();
+  playingSrcs.forEach(s=>{try{s.stop()}catch(e){}}); playingSrcs=[];
+  setBgm(1);
+  if(micNode){ try{micNode.disconnect()}catch(e){} micNode=null; }
+  badge(); $("ov").innerHTML=""; setActive(-1);
+}
+function pre(i){const prev=i>0?CUES[i-1].e+0.4:0;return Math.max(prev,CUES[i].s-2.5,0);}
+function scheduleTake(tk,t0){
+  const when=t0+tk.offset, s=ctx.createBufferSource(); s.buffer=tk.buffer; s.connect(voiceBus);
+  if(when>=ctx.currentTime) s.start(when); else if(ctx.currentTime-when<tk.buffer.duration) s.start(0,ctx.currentTime-when); else return;
+  playingSrcs.push(s);
+}
+async function run(fn,m){
+  if(busy) return; prime(); abortFlag=false; msg(""); setBusy(true,m);
+  try{ await initAudio(); await fn(); }
+  catch(err){ console.error(err); msg(err.message||String(err)); }
+  finally{ stopAll(); setBusy(false); }
+}
+$("bStop").onclick=()=>{abortFlag=true;};
+
+// Nút phát / dừng trên thanh điều khiển
+$("bPlay").onclick=()=>{
+  if(busy){abortFlag=true;return;}
+  run(async()=>{
+    if(video.ended||video.currentTime>=(video.duration||1)-0.2) await seek(0);
+    badge(); await startVideo(); await until(video.duration||999);
+  },"watch");
+};
+$("bMute").onclick=()=>{
+  video.muted=!video.muted;
+  $("icoVol").innerHTML=video.muted
+    ?'<path d="M4 9v6h4l5 4V5L8 9z M16 9.4l1.4-1.4 2.1 2.1 2.1-2.1 1.4 1.4-2.1 2.1 2.1 2.1-1.4 1.4-2.1-2.1-2.1 2.1-1.4-1.4 2.1-2.1z"/>'
+    :'<path d="M4 9v6h4l5 4V5L8 9z M15.5 8.5a5 5 0 0 1 0 7l-1.2-1.2a3.3 3.3 0 0 0 0-4.6z M18 6a8.5 8.5 0 0 1 0 12l-1.2-1.2a6.8 6.8 0 0 0 0-9.6z"/>';
+};
+$("bCC").onclick=()=>{ccOn=!ccOn;$("bCC").classList.toggle("on",ccOn);$("bCC").setAttribute("aria-pressed",ccOn);tick();};
+$("bFull").onclick=()=>{
+  const st=$("stage");
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  else if(st.requestFullscreen) st.requestFullscreen().catch(()=>{});
+  else if(video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+};
+function seekFromEvent(e){
+  if(busy||!video.duration) return;
+  const r=$("seek").getBoundingClientRect();
+  const f=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width));
+  video.currentTime=f*video.duration; tick();
+}
+$("seek").addEventListener("pointerdown",e=>{seekFromEvent(e);$("seek").setPointerCapture(e.pointerId);});
+$("seek").addEventListener("pointermove",e=>{if(e.buttons)seekFromEvent(e);});
+$("seek").addEventListener("keydown",e=>{
+  if(busy||!video.duration)return;
+  if(e.key==="ArrowRight")video.currentTime=Math.min(video.duration,video.currentTime+5);
+  if(e.key==="ArrowLeft")video.currentTime=Math.max(0,video.currentTime-5);
+});
+
+/* ---------- Nghe mẫu ---------- */
+async function playWithModel(){
+  if(orig.error) throw new Error(mediaErr(MODEL_SRCS[0]));
+  const po=orig.play().catch(()=>{ throw new Error("Trình duyệt chặn phát âm thanh mẫu. Hãy bấm lại nút một lần nữa."); });
+  await Promise.all([startVideo(),po]);
+}
+function playModel(i){run(async()=>{
+  const c=CUES[i]; setActive(i); const from=pre(i);
+  await seek(from); setBgm(0);
+  orig.currentTime=from+ORIG_OFFSET;
+  badge("🔊 Nghe mẫu");
+  await playWithModel();
+  await until(c.e+0.8);
+});}
+$("bModel").onclick=()=>run(async()=>{
+  await seek(0); setBgm(0); orig.currentTime=ORIG_OFFSET; badge("🔊 Bài mẫu");
+  await playWithModel(); await until(video.duration||999);
+});
+
+/* ---------- Luyện từng câu ---------- */
+function recordCue(i){run(async()=>{
+  if(!(await ensureMic())) return;
+  const c=CUES[i]; setActive(i); const from=pre(i);
+  await seek(from); await countdown(); if(abortFlag) return;
+  const mt=["audio/webm;codecs=opus","audio/mp4","audio/webm"].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t));
+  const rec=new MediaRecorder(micStream,mt?{mimeType:mt}:undefined), chunks=[];
+  rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+  const stopped=new Promise(r=>rec.onstop=r);
+  const started=new Promise(r=>rec.onstart=r);
+  rec.start(); await started; const tRec=performance.now();
+  setBgm(0.45);
+  await startVideo();
+  const offset=video.currentTime-(performance.now()-tRec)/1000;
+  badge("Đang thu… nói khi chữ chuyển vàng",true);
+  await until(c.e+1.2);
+  video.pause(); rec.stop(); await stopped;
+  if(abortFlag){msg("Đã dừng, câu này chưa được lưu.");return;}
+  const blob=new Blob(chunks,{type:rec.mimeType||mt||"audio/webm"});
+  const buffer=await ctx.decodeAudioData(await blob.arrayBuffer());
+  takes[i]={buffer,offset};
+  renderCues();
+  await playMineInner(i);
+});}
+async function playMineInner(i){
+  const tk=takes[i]; if(!tk) return; setActive(i);
+  await seek(Math.max(0,tk.offset));
+  badge("▶ Giọng của em"); setBgm(1);
+  await startVideo();
+  scheduleTake(tk,ctx.currentTime-video.currentTime);
+  await until(tk.offset+tk.buffer.duration);
+}
+function playMine(i){run(()=>playMineInner(i));}
+
+/* ---------- Ghi video (dùng chung) ---------- */
+const cv=$("cv"), g=cv.getContext("2d");
+function drawFrame(withCam){
+  const W=cv.width,H=cv.height;
+  g.drawImage(video,0,0,W,H);
+  if(withCam&&camOn&&camVid.readyState>=2&&camVid.videoWidth){
+    const r=Math.round(H*0.19), cx=W-r-Math.round(W*0.03), cy=H-r-Math.round(H*0.05);
+    const vw=camVid.videoWidth, vh=camVid.videoHeight, s=Math.min(vw,vh);
+    g.save(); g.beginPath(); g.arc(cx,cy,r,0,Math.PI*2); g.closePath(); g.clip();
+    g.translate(cx+r,cy-r); g.scale(-1,1);           // lật như gương
+    g.drawImage(camVid,(vw-s)/2,(vh-s)/2,s,s,0,0,2*r,2*r);
+    g.restore();
+    g.beginPath(); g.arc(cx,cy,r,0,Math.PI*2); g.lineWidth=Math.round(H*0.012); g.strokeStyle="#fff"; g.stroke();
+  }
+}
+function pickVideoType(){
+  const types=['video/mp4;codecs="avc1.42E01E,mp4a.40.2"',"video/mp4","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
+  return types.find(t=>MediaRecorder.isTypeSupported(t));
+}
+function canRecordVideo(){
+  if(!bgmGain){msg("Muốn ghi video, hãy mở trang qua link GitHub Pages (https://...), không mở trực tiếp file.");return false;}
+  if(!window.MediaRecorder||!cv.captureStream){msg("Trình duyệt này chưa hỗ trợ ghi video. Hãy dùng Chrome, Edge hoặc Safari bản mới.");return false;}
+  return true;
+}
+// Ghi toàn bộ video: thu micro trực tiếp (và camera nếu bật). live=false: ghép các câu đã thu (hiện không dùng).
+async function recordWhole(live){
+  const vs=cv.captureStream(30);
+  const stream=new MediaStream([vs.getVideoTracks()[0],mixDest.stream.getAudioTracks()[0]]);
+  const mt=pickVideoType();
+  const rec=new MediaRecorder(stream,{mimeType:mt,videoBitsPerSecond:2500000}); const chunks=[];
+  rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+  const stopped=new Promise(r=>rec.onstop=r);
+  await seek(0); drawFrame(live);
+  if(live){ await countdown(); if(abortFlag) return null; }
+  setBgm(0.9);
+  if(live){ micNode=ctx.createMediaStreamSource(micStream); const mg=ctx.createGain(); mg.gain.value=1.6; micNode.connect(mg); mg.connect(mixDest); }
+  const started=new Promise(r=>rec.onstart=r); rec.start(1000); await started;
+  badge(live?"Đang lồng tiếng… nói khi chữ chuyển vàng":"🎬 Đang ghi… đừng tắt trang",true);
+  await startVideo();
+  if(!live){ const t0=ctx.currentTime-video.currentTime; takes.forEach(tk=>tk&&scheduleTake(tk,t0)); }
+  await until((video.duration||120)-0.05,()=>drawFrame(live));
+  video.pause(); rec.stop(); await stopped;
+  if(abortFlag) return null;
+  const type=(mt||"video/webm").split(";")[0];
+  return {blob:new Blob(chunks,{type}),ext:type.includes("mp4")?"mp4":"webm"};
+}
+function showResult(r){
+  const url=URL.createObjectURL(r.blob);
+  $("outVid").src=url;
+  const name=($("stuName").value.trim()||"hoc-sinh").replace(/[\\/:*?"<>|]/g,"");
+  const dl=$("dl"); dl.href=url; dl.download=`Cute_${name}.${r.ext}`;
+  $("result").hidden=false; msg("Xong rồi! Em xem lại và bấm Tải video về nhé 🎉");
+  $("result").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+/* Nút lớn: lồng tiếng cả bài một lần */
+$("bDub").onclick=()=>run(async()=>{
+  if(!canRecordVideo()) return;
+  if(!(await ensureMic())) return;
+  const r=await recordWhole(true);
+  if(!r){ msg("Đã dừng ghi hình."); return; }
+  showResult(r);
+},"dub");
+
+/* Nút Ghi hình: tự bật camera rồi ghi lại phần lồng tiếng cả bài */
+$("bRecCam").onclick=async()=>{
+  if(busy) return;
+  prime();                       // mở khoá âm thanh ngay trong cú bấm
+  if(!camOn) await camStart();
+  if(!camOn) return;             // không mở được camera: đã có thông báo
+  $("bDub").click();
+};
+</script>
+</body>
+</html>
